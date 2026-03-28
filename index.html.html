@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<title>Registro de Ventas</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; }
+.app { max-width: 500px; margin: 0 auto; padding: 12px; }
+.topbar { background: #2E7D52; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.topbar-title { font-size: 15px; font-weight: 600; color: #fff; }
+.topbar-sub { font-size: 11px; color: #A8D5BC; margin-top: 2px; }
+.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.stat { background: #fff; border-radius: 10px; padding: 10px; border: 1px solid #e8e8e8; }
+.stat-label { font-size: 10px; color: #888; margin-bottom: 3px; }
+.stat-val { font-size: 18px; font-weight: 600; color: #111; }
+.slabel { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 7px; }
+.pago-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.pago-btn { padding: 11px; border: 1px solid #ddd; border-radius: 10px; background: #fff; cursor: pointer; font-size: 13px; color: #333; font-weight: 500; -webkit-tap-highlight-color: transparent; }
+.pago-btn.active { background: #E8F5E9; border-color: #2E7D52; color: #1A4D30; }
+.search-wrap { margin-bottom: 10px; }
+.search-wrap input { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; background: #fff; color: #111; outline: none; }
+.search-wrap input:focus { border-color: #2E7D52; }
+.cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.cat-btn { padding: 6px 13px; border: 1px solid #ddd; border-radius: 20px; background: #fff; font-size: 12px; color: #666; cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.cat-btn.active { background: #2E7D52; color: #fff; border-color: #2E7D52; }
+.products { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.prod-btn { background: #fff; border: 1px solid #e8e8e8; border-radius: 14px; padding: 12px 10px; cursor: pointer; text-align: center; -webkit-tap-highlight-color: transparent; transition: transform 0.1s; }
+.prod-btn:active { transform: scale(0.96); background: #f5f5f5; }
+.prod-name { font-size: 12px; font-weight: 600; color: #111; margin-bottom: 3px; line-height: 1.3; }
+.prod-count { font-size: 10px; color: #aaa; }
+.prod-count.has { color: #1A4D30; font-weight: 600; }
+.historial { background: #fff; border: 1px solid #e8e8e8; border-radius: 14px; overflow: hidden; margin-bottom: 10px; }
+.hist-header { padding: 10px 14px; background: #f9f9f9; border-bottom: 1px solid #e8e8e8; display: flex; justify-content: space-between; align-items: center; }
+.hist-title { font-size: 13px; font-weight: 600; color: #111; }
+.hist-clear { font-size: 11px; color: #c0392b; cursor: pointer; background: none; border: none; }
+.hist-empty { padding: 20px; text-align: center; font-size: 13px; color: #aaa; }
+.hist-item { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+.hist-item:last-child { border-bottom: none; }
+.hist-prod { font-size: 12px; font-weight: 600; color: #111; }
+.hist-meta { font-size: 11px; color: #aaa; margin-top: 1px; }
+.hist-pago { font-size: 10px; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+.pago-ef { background: #E8F5E9; color: #1A4D30; }
+.pago-tr { background: #E3F2FD; color: #0C447C; }
+.hist-del { font-size: 12px; color: #c0392b; cursor: pointer; background: none; border: none; padding: 0 4px; margin-left: 4px; }
+.btns-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.btn-sec { padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 14px; font-size: 13px; color: #333; cursor: pointer; font-weight: 500; -webkit-tap-highlight-color: transparent; }
+.btn-pri { padding: 12px; background: #2E7D52; color: #fff; border: none; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.btn-export { width: 100%; padding: 12px; background: #fff; border: 1px solid #2E7D52; border-radius: 14px; font-size: 13px; color: #2E7D52; cursor: pointer; font-weight: 500; margin-bottom: 20px; -webkit-tap-highlight-color: transparent; }
+.overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 16px; padding-top: 40px; overflow-y: auto; }
+.overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 16px; padding: 18px; width: 100%; max-width: 440px; max-height: 80vh; overflow-y: auto; }
+.modal-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 14px; }
+.modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+.modal-row:last-of-type { border-bottom: none; }
+.modal-key { color: #666; }
+.modal-val { color: #111; font-weight: 600; }
+.modal-section { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; margin: 14px 0 6px; font-weight: 600; }
+.modal-close { width: 100%; margin-top: 16px; padding: 12px; background: #f5f5f5; border: none; border-radius: 12px; cursor: pointer; font-size: 13px; color: #666; }
+.qty-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+.qty-overlay.open { display: flex; }
+.qty-box { background: #fff; border-radius: 20px; padding: 28px 24px; width: 100%; max-width: 300px; text-align: center; }
+.qty-name { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 20px; line-height: 1.4; }
+.qty-controls { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 24px; }
+.qty-circle { width: 52px; height: 52px; border-radius: 50%; border: 1px solid #ddd; background: #f9f9f9; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #111; -webkit-tap-highlight-color: transparent; }
+.qty-circle:active { background: #eee; }
+.qty-num { font-size: 44px; font-weight: 700; color: #111; min-width: 56px; }
+.qty-confirm { width: 100%; padding: 14px; background: #2E7D52; color: #fff; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px; -webkit-tap-highlight-color: transparent; }
+.qty-cancel { width: 100%; padding: 11px; background: #f5f5f5; border: none; border-radius: 12px; font-size: 13px; color: #666; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.days-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.day-tab { padding: 5px 12px; border: 1px solid #ddd; border-radius: 20px; background: #fff; font-size: 12px; color: #666; cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.day-tab.active { background: #1A4D30; color: #fff; border-color: #1A4D30; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Registro de ventas</div>
+      <div class="topbar-sub" id="fecha-hoy"></div>
+    </div>
+    <div style="font-size:11px;color:#A8D5BC;" id="hora-hoy"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Transacciones</div><div class="stat-val" id="st-trans">0</div></div>
+    <div class="stat"><div class="stat-label">Unidades</div><div class="stat-val" id="st-uni">0</div></div>
+    <div class="stat"><div class="stat-label">Efect / Transfer</div><div class="stat-val" id="st-pago" style="font-size:13px;">0 / 0</div></div>
+  </div>
+
+  <div class="slabel">Forma de pago</div>
+  <div class="pago-row">
+    <button class="pago-btn active" id="btn-ef" onclick="setPago('efectivo')">Efectivo</button>
+    <button class="pago-btn" id="btn-tr" onclick="setPago('transferencia')">Transferencia</button>
+  </div>
+
+  <div class="slabel">Categoría</div>
+  <div class="cats" id="cats"></div>
+
+  <div class="search-wrap">
+    <input type="text" placeholder="Buscar producto..." id="search-inp" oninput="renderProductos()"/>
+  </div>
+
+  <div class="products" id="productos"></div>
+
+  <div class="historial">
+    <div class="hist-header">
+      <span class="hist-title">Últimas ventas del día</span>
+      <button class="hist-clear" onclick="confirmarBorrar()">Borrar todo</button>
+    </div>
+    <div id="hist-body"><div class="hist-empty">Aún no hay ventas registradas</div></div>
+  </div>
+
+  <div class="btns-row">
+    <button class="btn-sec" onclick="verHistorial()">Ver historial</button>
+    <button class="btn-pri" onclick="verResumen()">Resumen del día</button>
+  </div>
+  <button class="btn-export" onclick="exportarCSV()">Exportar ventas a CSV</button>
+</div>
+
+<div class="overlay" id="modal-resumen">
+  <div class="modal">
+    <div class="modal-title">Resumen del día</div>
+    <div id="modal-res-body"></div>
+    <button class="modal-close" onclick="cerrar('modal-resumen')">Cerrar</button>
+  </div>
+</div>
+
+<div class="overlay" id="modal-historial">
+  <div class="modal">
+    <div class="modal-title">Historial completo</div>
+    <div class="slabel" style="margin-bottom:8px;">Filtrar por día</div>
+    <div class="days-tabs" id="days-tabs"></div>
+    <div id="modal-hist-body"></div>
+    <button class="modal-close" onclick="cerrar('modal-historial')">Cerrar</button>
+  </div>
+</div>
+
+<div class="qty-overlay" id="qty-overlay">
+  <div class="qty-box">
+    <div class="qty-name" id="qty-prod-name"></div>
+    <div class="qty-controls">
+      <div class="qty-circle" onclick="cambiarQty(-1)">−</div>
+      <div class="qty-num" id="qty-num">1</div>
+      <div class="qty-circle" onclick="cambiarQty(1)">+</div>
+    </div>
+    <button class="qty-confirm" onclick="confirmarVenta()">Registrar venta</button>
+    <button class="qty-cancel" onclick="cerrarQty()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+const PRODUCTOS = [
+  {id:'pk_l', nombre:'Poker Latón', cat:'Cervezas'},
+  {id:'cl_l', nombre:'Club Latón', cat:'Cervezas'},
+  {id:'ag_b', nombre:'Aguardiente Botella', cat:'Licores'},
+  {id:'ag_c', nombre:'Aguardiente Caneca', cat:'Licores'},
+  {id:'rt_b', nombre:'Ron Tradicional Botella', cat:'Licores'},
+  {id:'rt_c', nombre:'Ron Tradicional Caneca', cat:'Licores'},
+  {id:'re_b', nombre:'Ron Esential Botella', cat:'Licores'},
+  {id:'re_c', nombre:'Ron Esential Caneca', cat:'Licores'},
+  {id:'br_c', nombre:'Brandy Caneca', cat:'Licores'},
+  {id:'br_b', nombre:'Brandy Botella', cat:'Licores'},
+  {id:'tq',   nombre:'Tequila Olmeca', cat:'Licores'},
+  {id:'mia_s',nombre:'Agua MIA sin gas', cat:'Bebidas'},
+  {id:'mia_g',nombre:'Agua MIA con gas', cat:'Bebidas'},
+  {id:'hit',  nombre:'Jugo Hit', cat:'Bebidas'},
+  {id:'gat',  nombre:'Gatorade', cat:'Bebidas'},
+  {id:'cc',   nombre:'Cocacola', cat:'Bebidas'},
+  {id:'v100', nombre:'Viva 100', cat:'Bebidas'},
+  {id:'spd',  nombre:'Speed Max', cat:'Bebidas'},
+  {id:'cig1200',nombre:'Cigarrillos 1200', cat:'Cigarrillos'},
+  {id:'cig1000',nombre:'Cigarrillos 1000', cat:'Cigarrillos'},
+  {id:'cig900', nombre:'Cigarrillos 900', cat:'Cigarrillos'},
+];
+
+const CATS = ['Todas', ...new Set(PRODUCTOS.map(p=>p.cat))];
+const STORAGE_KEY = 'ventas_tienda_v2';
+
+let ventas = [];
+let pagoActual = 'efectivo';
+let catActual = 'Todas';
+let prodSel = null;
+let qtyCur = 1;
+let histDia = null;
+
+function cargarVentas() {
+  try { const r = localStorage.getItem(STORAGE_KEY); ventas = r ? JSON.parse(r) : []; } catch(e) { ventas = []; }
+}
+function guardarVentas() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(ventas)); } catch(e) {}
+}
+function hoyStr() {
+  return new Date().toLocaleDateString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit'});
+}
+function ventasHoy() {
+  const h = hoyStr(); return ventas.filter(v=>v.fecha===h);
+}
+function setPago(t) {
+  pagoActual = t;
+  document.getElementById('btn-ef').className='pago-btn'+(t==='efectivo'?' active':'');
+  document.getElementById('btn-tr').className='pago-btn'+(t==='transferencia'?' active':'');
+}
+function renderCats() {
+  document.getElementById('cats').innerHTML = CATS.map(c=>
+    `<div class="cat-btn${c===catActual?' active':''}" onclick="setCat('${c}')">${c}</div>`
+  ).join('');
+}
+function setCat(c) { catActual=c; renderCats(); renderProductos(); }
+function renderProductos() {
+  const q = document.getElementById('search-inp').value.toLowerCase();
+  const hoy = ventasHoy();
+  const counts = {};
+  hoy.forEach(v=>{ counts[v.id]=(counts[v.id]||0)+v.qty; });
+  const fil = PRODUCTOS.filter(p=>(catActual==='Todas'||p.cat===catActual)&&(!q||p.nombre.toLowerCase().includes(q)));
+  document.getElementById('productos').innerHTML = fil.map(p=>{
+    const c = counts[p.id]||0;
+    return `<div class="prod-btn" onclick="abrirQty('${p.id}')">
+      <div class="prod-name">${p.nombre}</div>
+      <div class="prod-count${c?' has':''}">${c?c+' hoy':'Toca para registrar'}</div>
+    </div>`;
+  }).join('');
+}
+function abrirQty(id) {
+  prodSel = PRODUCTOS.find(p=>p.id===id);
+  qtyCur = 1;
+  document.getElementById('qty-prod-name').textContent = prodSel.nombre;
+  document.getElementById('qty-num').textContent = 1;
+  document.getElementById('qty-overlay').className = 'qty-overlay open';
+}
+function cerrarQty() { document.getElementById('qty-overlay').className='qty-overlay'; prodSel=null; }
+function cambiarQty(d) { qtyCur=Math.max(1,qtyCur+d); document.getElementById('qty-num').textContent=qtyCur; }
+function confirmarVenta() {
+  if (!prodSel) return;
+  const ahora = new Date();
+  ventas.unshift({id:prodSel.id,nombre:prodSel.nombre,cat:prodSel.cat,qty:qtyCur,pago:pagoActual,
+    hora:ahora.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),fecha:hoyStr(),ts:ahora.getTime()});
+  guardarVentas(); cerrarQty(); renderAll();
+}
+function renderStats() {
+  const hoy=ventasHoy();
+  const ef=hoy.filter(v=>v.pago==='efectivo').length;
+  const tr=hoy.filter(v=>v.pago==='transferencia').length;
+  document.getElementById('st-trans').textContent=hoy.length;
+  document.getElementById('st-uni').textContent=hoy.reduce((s,v)=>s+v.qty,0);
+  document.getElementById('st-pago').textContent=ef+' / '+tr;
+}
+function renderHistorial() {
+  const hoy=ventasHoy().slice(0,10);
+  const body=document.getElementById('hist-body');
+  if (!hoy.length){body.innerHTML='<div class="hist-empty">Sin ventas hoy todavía</div>';return;}
+  body.innerHTML=hoy.map(v=>
+    `<div class="hist-item">
+      <div><div class="hist-prod">${v.nombre}</div><div class="hist-meta">${v.hora} · ${v.qty} und.</div></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="hist-pago ${v.pago==='efectivo'?'pago-ef':'pago-tr'}">${v.pago==='efectivo'?'Efectivo':'Transfer.'}</span>
+        <button class="hist-del" onclick="borrarVenta(${v.ts})">✕</button>
+      </div>
+    </div>`
+  ).join('');
+}
+function borrarVenta(ts) { ventas=ventas.filter(v=>v.ts!==ts); guardarVentas(); renderAll(); }
+function confirmarBorrar() {
+  if (!ventasHoy().length) return;
+  if (confirm('¿Borrar TODAS las ventas de hoy?')) {
+    const h=hoyStr(); ventas=ventas.filter(v=>v.fecha!==h); guardarVentas(); renderAll();
+  }
+}
+function verResumen() {
+  const hoy=ventasHoy();
+  const counts={};
+  hoy.forEach(v=>{counts[v.nombre]=(counts[v.nombre]||0)+v.qty;});
+  const catCount={};
+  hoy.forEach(v=>{catCount[v.cat]=(catCount[v.cat]||0)+v.qty;});
+  const ef=hoy.filter(v=>v.pago==='efectivo').reduce((s,v)=>s+v.qty,0);
+  const tr=hoy.filter(v=>v.pago==='transferencia').reduce((s,v)=>s+v.qty,0);
+  let html='<div class="modal-section">Por producto</div>';
+  if (!hoy.length){html+='<div style="font-size:13px;color:#aaa;padding:8px 0;">Sin ventas hoy.</div>';}
+  else {
+    html+=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([n,q])=>
+      `<div class="modal-row"><span class="modal-key">${n}</span><span class="modal-val">${q} und.</span></div>`).join('');
+    html+='<div class="modal-section">Por categoría</div>';
+    html+=Object.entries(catCount).map(([c,q])=>
+      `<div class="modal-row"><span class="modal-key">${c}</span><span class="modal-val">${q} und.</span></div>`).join('');
+    html+='<div class="modal-section">Forma de pago</div>';
+    html+=`<div class="modal-row"><span class="modal-key">Efectivo</span><span class="modal-val">${ef} und.</span></div>`;
+    html+=`<div class="modal-row"><span class="modal-key">Transferencia</span><span class="modal-val">${tr} und.</span></div>`;
+    html+='<div class="modal-section">Totales</div>';
+    html+=`<div class="modal-row"><span class="modal-key">Transacciones</span><span class="modal-val">${hoy.length}</span></div>`;
+    html+=`<div class="modal-row"><span class="modal-key">Unidades totales</span><span class="modal-val">${hoy.reduce((s,v)=>s+v.qty,0)}</span></div>`;
+  }
+  document.getElementById('modal-res-body').innerHTML=html;
+  document.getElementById('modal-resumen').className='overlay open';
+}
+function verHistorial() {
+  const dias=[...new Set(ventas.map(v=>v.fecha))].sort((a,b)=>b.localeCompare(a));
+  if (!histDia&&dias.length) histDia=dias[0];
+  document.getElementById('days-tabs').innerHTML=dias.map(d=>
+    `<div class="day-tab${d===histDia?' active':''}" onclick="setHistDia('${d}')">${d}</div>`
+  ).join('')||'<span style="font-size:13px;color:#aaa;">Sin registros aún</span>';
+  renderHistModal();
+  document.getElementById('modal-historial').className='overlay open';
+}
+function setHistDia(d) {
+  histDia=d;
+  document.querySelectorAll('.day-tab').forEach(el=>{el.className='day-tab'+(el.textContent===d?' active':'');});
+  renderHistModal();
+}
+function renderHistModal() {
+  const lista=ventas.filter(v=>v.fecha===histDia);
+  if (!lista.length){document.getElementById('modal-hist-body').innerHTML='<div style="padding:12px 0;font-size:13px;color:#aaa;">Sin ventas este día.</div>';return;}
+  document.getElementById('modal-hist-body').innerHTML=lista.map(v=>
+    `<div class="modal-row">
+      <div><div style="font-size:13px;font-weight:600;color:#111;">${v.nombre}</div>
+      <div style="font-size:11px;color:#aaa;">${v.hora} · ${v.qty} und.</div></div>
+      <span class="hist-pago ${v.pago==='efectivo'?'pago-ef':'pago-tr'}">${v.pago==='efectivo'?'Efectivo':'Transfer.'}</span>
+    </div>`
+  ).join('');
+}
+function exportarCSV() {
+  if (!ventas.length){alert('No hay ventas para exportar.');return;}
+  const cols=['Fecha','Hora','Producto','Categoria','Cantidad','Pago'];
+  const rows=ventas.map(v=>[v.fecha,v.hora,v.nombre,v.cat,v.qty,v.pago].join(','));
+  const csv=[cols.join(','),...rows].join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='ventas_tienda.csv'; a.click(); URL.revokeObjectURL(url);
+}
+function cerrar(id){document.getElementById(id).className='overlay';}
+function renderAll(){renderStats();renderProductos();renderHistorial();}
+function actualizarHora(){
+  const ahora=new Date();
+  document.getElementById('fecha-hoy').textContent=ahora.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('hora-hoy').textContent=ahora.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+}
+cargarVentas(); renderCats(); actualizarHora(); setInterval(actualizarHora,30000); renderAll();
+</script>
+</body>
+</html>
